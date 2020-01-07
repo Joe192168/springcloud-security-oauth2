@@ -17,7 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * @create: 2019-12-27 12:59
  **/
 @Configuration
-@EnableGlobalMethodSecurity(prePostEnabled = true)//开启方法授权拦截，进行权限校验
+@EnableGlobalMethodSecurity(securedEnabled = true,prePostEnabled = true)//开启方法授权拦截，进行权限校验
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
@@ -47,24 +47,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         //security 为防止CSRF（跨站请求 403）限制处了get以外的大部分请求
-        http.csrf().disable()//屏蔽CSRF控制，即spring security 不再限制CSRF
+        http.csrf().disable()
                 .authorizeRequests()
-                /*.antMatchers("/r/r1").hasAuthority("p1")//增加两个web授权路径
-                .antMatchers("/r/r2").hasAuthority("p2")*/
-                .antMatchers("/r/**").authenticated()//所有/r/**的请求必须认证通过
-                .anyRequest().permitAll()//除了/r/**，其它的访问请求可以访问
+                .antMatchers("/r/r1").hasAnyAuthority("p1")
+                .antMatchers("/login*").permitAll()
+                .anyRequest().authenticated()
                 .and()
-                .formLogin()//允许表单登陆
-                .loginPage("/login-view")//登陆页面
-                .loginProcessingUrl("/login")
-                .successForwardUrl("/login-success")//自定义登陆成功的页面地址
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)//会话设置，如果没有session就创建并使用
-                .and()
-                .logout()
-                .logoutUrl("/logout")//自定义退出页面
-                .logoutSuccessUrl("/login-view?logout");
+                .formLogin()
+        ;
     }
 
 }
