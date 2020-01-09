@@ -1,5 +1,6 @@
 package com.joe.config;
 
+import com.joe.service.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,7 +50,7 @@ public class AuthorizationServer extends AuthorizationServerConfigurerAdapter {
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private MyUserDetailsService myUserDetailsService;
 
 
     //配置客户端详情服务
@@ -85,18 +86,19 @@ public class AuthorizationServer extends AuthorizationServerConfigurerAdapter {
         return new InMemoryAuthorizationCodeServices();
     }
 
-    //令牌访问端点
+    //配置授权、令牌的访问端点和令牌服务
     @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         endpoints.authenticationManager(authenticationManager)//认证管理器
                 .authorizationCodeServices(authorizationCodeServices)//授权码模式
+                .userDetailsService(myUserDetailsService)
                 .tokenServices(tokenServices())//令牌管理服务
                 .allowedTokenEndpointRequestMethods(HttpMethod.POST);//允许POST提交
     }
 
     //令牌访问端点安全策略
     @Override
-    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+    public void configure(AuthorizationServerSecurityConfigurer security) {
         security.tokenKeyAccess("permitAll()")// oauth/token_key 公开
                 .checkTokenAccess("permitAll()")// /oauth/check_token 公开校验令牌
                 .allowFormAuthenticationForClients();//允许表单认证
